@@ -12,8 +12,9 @@
 
 #pragma once
 
-#include <cassert>
 #include <math.h>
+
+#include <cassert>
 
 #include "cranes_types.hpp"
 
@@ -28,41 +29,38 @@ namespace cranes {
 //
 // The grid must be non-empty.
 path crane_unloading_exhaustive(const grid& setting) {
+    // grid must be non-empty.
+    assert(setting.rows() > 0);
+    assert(setting.columns() > 0);
 
-  // grid must be non-empty.
-  assert(setting.rows() > 0);
-  assert(setting.columns() > 0);
+    // Compute maximum path length, and check that it is legal.
+    const size_t max_steps = setting.rows() + setting.columns() - 2;
+    assert(max_steps < 64);
 
-  // Compute maximum path length, and check that it is legal.
-  const size_t max_steps = setting.rows() + setting.columns() - 2;
-  assert(max_steps < 64);
-
-  // TODO: implement the exhaustive search algorithm, then delete this
-  // comment.
-  path best(setting);
-  for (size_t steps = 0; steps <= max_steps; steps++) {
+    // TODO: implement the exhaustive search algorithm, then delete this
+    // comment.
+    path best(setting);
+    for (size_t steps = 0; steps <= max_steps; steps++) {
+    }
 }
 
 // Solve the crane unloading problem for the given grid, using a dynamic
 // programming algorithm.
 //
 // The grid must be non-empty.
-//path crane_unloading_dyn_prog(const grid& setting) {
+// path crane_unloading_dyn_prog(const grid& setting) {
 path crane_unloading_dyn_prog(const grid& setting) {
+    // grid must be non-empty.
+    assert(setting.rows() > 0);
+    assert(setting.columns() > 0);
 
-  // grid must be non-empty.
-  assert(setting.rows() > 0);
-  assert(setting.columns() > 0);
+    // TODO: implement the dynamic programming algorithm, then delete this
+    // comment.
 
-  // TODO: implement the dynamic programming algorithm, then delete this
-  // comment.
+    assert(best->has_value());
+    //  //   std::cout << "total cranes" << (**best).total_cranes() << std::endl;
 
-
-
-   assert(best->has_value());
-//  //   std::cout << "total cranes" << (**best).total_cranes() << std::endl;
-
-   return **best;
-	}
-
+    return **best;
 }
+
+}  // namespace cranes
