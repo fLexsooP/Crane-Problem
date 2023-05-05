@@ -37,8 +37,6 @@ path crane_unloading_exhaustive(const grid& setting) {
     const size_t max_steps = setting.rows() + setting.columns() - 2;
     assert(max_steps < 64);
 
-    // TODO: implement the exhaustive search algorithm, then delete this
-    // comment.
     path best_path(setting);
     for (size_t steps = 0; steps <= max_steps; steps++) {
         size_t pow_set_size = pow(2, steps);
@@ -48,27 +46,20 @@ path crane_unloading_exhaustive(const grid& setting) {
             for (size_t k = 0; k < steps; k++) {
                 step_direction direction;
 
-                // int bit = counter & (1 << k);
                 int bit = (counter >> k) & 1;
-                // std::cout << "\ncounter = " << counter << "   k = " << k;
 
                 if (bit == STEP_DIRECTION_EAST) {
-                    // std::cout << "\nmove east";
                     direction = STEP_DIRECTION_EAST;
                 } else {
-                    // std::cout << "\nmove south";
                     direction = STEP_DIRECTION_SOUTH;
                 }
                 if (current_path.is_step_valid(direction)) {
                     current_path.add_step(direction);
-                    // std::cout << " ----- valid move";
                 } else {
                     is_valid_path = false;
-                    // std::cout << " ============== not valid move\n";
                     break;
                 }
             }
-            // std::cout << "current crane: " << current_path.total_cranes() << "   best crane: " << best_path.total_cranes() << "\n";
             if (is_valid_path) {
                 if (current_path.total_cranes() > best_path.total_cranes()) {
                     best_path = current_path;
@@ -88,13 +79,9 @@ path crane_unloading_dyn_prog(const grid& setting) {
     // grid must be non-empty.
     assert(setting.rows() > 0);
     assert(setting.columns() > 0);
-    // TODO: implement the dynamic programming algorithm, then delete this
-    // comment.
 
     // crane_grid: the grid of max crane number for corresponding position
     std::vector<std::vector<int>> crane_grid(setting.rows(), std::vector<int>(setting.columns(), 0));
-
-    std::cout << '\n';
 
     for (size_t r = 0; r < setting.rows(); r++) {
         for (size_t c = 0; c < setting.columns(); c++) {
@@ -137,32 +124,12 @@ path crane_unloading_dyn_prog(const grid& setting) {
         }
     }
 
-    // print input grid
-    setting.print();
-    std::cout << '\n';
-
-    // print crane grid
-    for (auto&& row : crane_grid) {
-        for (auto&& column : row) {
-            std::cout << column << " ";
-        }
-        std::cout << "\n";
-    }
-    std::cout << "\n";
-
-    // for (size_t i = 0; i < crane_grid.size(); i++)
-    // {
-    //     for (size_t j = 0; j < crane_grid[0].size(); j++)
-    //     {
-    //         std::cout << crane_grid[i][j] << " ";
-    //     }
-    //     std::cout << "\n";
-    // }
-
     // trace back from end point
     int i = crane_grid.size() - 1;
     int j = crane_grid[0].size() - 1;
     int r = 0, c = 0, max = -1;
+
+    // if endpoint blocked or is building, get the block with maximum cranes
     if (crane_grid[i][j] == -1) {
         for (size_t k = 0; k < crane_grid.size(); k++) {
             for (size_t l = 0; l < crane_grid[0].size(); l++) {
@@ -176,7 +143,11 @@ path crane_unloading_dyn_prog(const grid& setting) {
         i = r;
         j = c;
     }
+
+    // collection of steps in tracing back process
     std::vector<step_direction> step_trace_back;
+
+    // trace back from the block, steps will be reverse order
     while (i >= 0 && j >= 0) {
         if (i == 0 && j == 0) {
             break;
@@ -198,21 +169,13 @@ path crane_unloading_dyn_prog(const grid& setting) {
         }
     }
     std::reverse(step_trace_back.begin(), step_trace_back.end());
+
+    // add the best path to return object
     path best(setting);
     for (auto&& step : step_trace_back) {
         best.add_step(step);
     }
-    // for (auto &&step : step_trace_back)
-    // {
-    //     std::cout << step;
-    // }
 
-    std::cout << "\n";
-    best.print();
-
-    std::cout << "\n\n";
-    std::cout << "=============================================\n";
-    std::cout << "\n\n";
     return best;
 }
 
