@@ -162,11 +162,22 @@ path crane_unloading_dyn_prog(const grid& setting) {
     // trace back from end point
     int i = crane_grid.size() - 1;
     int j = crane_grid[0].size() - 1;
+    int r = 0, c = 0, max = -1;
+    if (crane_grid[i][j] == -1) {
+        for (size_t k = 0; k < crane_grid.size(); k++) {
+            for (size_t l = 0; l < crane_grid[0].size(); l++) {
+                if (crane_grid[k][l] > max) {
+                    max = crane_grid[k][l];
+                    r = k;
+                    c = l;
+                }
+            }
+        }
+        i = r;
+        j = c;
+    }
     std::vector<step_direction> step_trace_back;
     while (i >= 0 && j >= 0) {
-        if (crane_grid[i][j] == -1) {
-            break;
-        }
         if (i == 0 && j == 0) {
             break;
         }
