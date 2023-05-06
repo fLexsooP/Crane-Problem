@@ -108,21 +108,21 @@ path crane_unloading_dyn_prog(const grid& setting) {
             }
 
             // from_above = None if i=0 or G[i-1][j]==X; or G[i-1][j] + [↓] otherwise
-            int from_above = 0;
+            int from_above;
             if (r == 0 || setting.get(r - 1, c) == CELL_BUILDING) {
                 from_above = -1;
             } else {
                 int crane = setting.get(r, c) == CELL_CRANE ? 1 : 0;
-                from_above += crane_grid[r - 1][c] + crane;
+                from_above = crane_grid[r - 1][c] == -1 ? -1 : crane_grid[r - 1][c] + crane;
             }
 
             // from_left = None if j=0 or G[i][j-1]==X; or G[i][j-1] + [→] otherwise
-            int from_left = 0;
+            int from_left;
             if (c == 0 || setting.get(r, c - 1) == CELL_BUILDING) {
                 from_left = -1;
             } else {
                 int crane = setting.get(r, c) == CELL_CRANE ? 1 : 0;
-                from_left += crane_grid[r][c - 1] + crane;
+                from_left = crane_grid[r][c - 1] == -1 ? -1 : crane_grid[r][c - 1] + crane;
             }
             if (from_above == -1 && from_left == -1) {
                 crane_grid[r][c] = -1;
@@ -146,15 +146,15 @@ path crane_unloading_dyn_prog(const grid& setting) {
     if the endpoint is building or blocked, start trace back from
     the block with maximum crane number
     comment out below line if logic 1 established
-    */
     if (crane_grid[trace_back_start_row][trace_back_start_column] == -1) {
+    */
 
     /* logic 2
     if the endpoint is less than maximum crane, start trace back from the block with
     maximum crane number
     comment out below line if logic 2 established
-    if (crane_grid[trace_back_start_row][trace_back_start_column] < max_crane_val) {
     */
+    if (crane_grid[trace_back_start_row][trace_back_start_column] < max_crane_val) {
 
         trace_back_start_row = max_crane_row;
         trace_back_start_column = max_crane_column;
