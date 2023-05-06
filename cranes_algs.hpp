@@ -15,7 +15,6 @@
 #include <math.h>
 
 #include <cassert>
-
 #include <stack>
 
 #include "cranes_types.hpp"
@@ -78,40 +77,72 @@ path crane_unloading_exhaustive(const grid& setting) {
 // The grid must be non-empty.
 // path crane_unloading_dyn_prog(const grid& setting) {
 path crane_unloading_dyn_prog(const grid& setting) {
+    // grid must be non-empty.
+    assert(setting.rows() > 0);
+    assert(setting.columns() > 0);
 
-  // grid must be non-empty.
-  assert(setting.rows() > 0);
-  assert(setting.columns() > 0);
+    using cell_type = std::optional<path>;
 
+    std::vector<std::vector<cell_type> > A(setting.rows(),
+                                           std::vector<cell_type>(setting.columns()));
 
-  using cell_type = std::optional<path>;
+    A[0][0] = path(setting);
+    assert(A[0][0].has_value());
 
-  std::vector<std::vector<cell_type> > A(setting.rows(),
-                                        std::vector<cell_type>(setting.columns()));
+    for (coordinate r = 0; r < setting.rows(); ++r) {
+        for (coordinate c = 0; c < setting.columns(); ++c) {
+            if (setting.get(r, c) == CELL_BUILDING) {
+                A[r][c].reset();
+                continue;
+            }
 
-  A[0][0] = path(setting);
-  assert(A[0][0].has_value());
+            cell_type from_above = std::nullopt;
+            cell_type from_left = std::nullopt;
 
-  for (coordinate r = 0; r < setting.rows(); ++r) {
-    for (coordinate c = 0; c < setting.columns(); ++c) {
+            if (r > 0 && A[r - 1][c].has_value()) {
+                from_above = A[r - 1][c];
+                if (from_above->is_step_valid(STEP_DIRECTION_SOUTH)) {
+                    from_above->add_step(STEP_DIRECTION_SOUTH);
+                }
+            }
 
-      if (setting.get(r, c) == CELL_BUILDING){
-        A[r][c].reset();
-        continue;
+            if (c > 0 && A[r][c - 1].has_value()) {
+                from_left = A[r][c - 1];
+                if (from_left->is_step_valid(STEP_DIRECTION_EAST)) {
+                    from_left->add_step(STEP_DIRECTION_EAST);
+                }
+            }
+            if (from_above.has_value() && from_left.has_value()) {
+                if (from_above->total_cranes() > from_left->total_cranes()) {
+                    A[r][c] = from_above;
+                } else {
+                    A[r][c] = from_left;
+                }
+            }
+
+            else if (from_left.has_value()) {
+                A[r][c] = from_left;
+            }
+
+            else if (from_above.has_value()) {
+                A[r][c] = from_above;
+            }
         }
+    }
+    cell_type* best = &(A[0][0]);
+    assert(best->has_value());
+    for (coordinate r = 0; r < setting.rows(); ++r) {
+        for (coordinate c = 0; c < setting.columns(); ++c) {
+            if (A[r][c].has_value() && A[r][c]->total_cranes() > (*best)->total_cranes()) {
+                best = &(A[r][c]);
+            }
+        }
+    }
 
-    cell_type from_above = std::nullopt;
-    cell_type from_left = std::nullopt;
+    assert(best->has_value());
+    //  //   std::cout << "total cranes" << (**best).total_cranes() << std::endl;
 
-	    // TODO: implement the dynamic programming algorithm, then delete this
-  // comment.
-
-   assert(best->has_value());
-//  //   std::cout << "total cranes" << (**best).total_cranes() << std::endl;
-
-   return **best;
-	}
-
+    return **best;
 }
 
 }  // namespace cranes
