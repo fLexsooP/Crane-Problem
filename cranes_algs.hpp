@@ -141,9 +141,21 @@ path crane_unloading_dyn_prog(const grid& setting) {
         }
     }
 
-    // if the endpoint is building or blocked, start trace back from
-    // the block with maximum crane number
+    // TODO: Need to make sure which logic to follow
+    /* logic 1
+    if the endpoint is building or blocked, start trace back from
+    the block with maximum crane number
+    comment out below line if logic 1 established
+    */
     if (crane_grid[trace_back_start_row][trace_back_start_column] == -1) {
+
+    /* logic 2
+    if the endpoint is less than maximum crane, start trace back from the block with
+    maximum crane number
+    comment out below line if logic 2 established
+    if (crane_grid[trace_back_start_row][trace_back_start_column] < max_crane_val) {
+    */
+
         trace_back_start_row = max_crane_row;
         trace_back_start_column = max_crane_column;
     }
