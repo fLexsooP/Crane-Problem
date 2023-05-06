@@ -16,6 +16,8 @@
 
 #include <cassert>
 
+#include <stack>
+
 #include "cranes_types.hpp"
 
 namespace cranes {
@@ -83,6 +85,16 @@ path crane_unloading_dyn_prog(const grid& setting) {
     // crane_grid: the grid of max crane number for corresponding position
     std::vector<std::vector<int>> crane_grid(setting.rows(), std::vector<int>(setting.columns(), 0));
 
+    // trace back starting point, default the most right bottom block
+    int trace_back_start_row = crane_grid.size() - 1;
+    int trace_back_start_column = crane_grid[0].size() - 1;
+
+    // records of the max crane number and it's position
+    int max_crane_row = 0, max_crane_column = 0;
+    int max_crane_val = -1;
+
+    // main loop to generate a grid with maximum crane number of it's corresponding
+    // input grid position
     for (size_t r = 0; r < setting.rows(); r++) {
         for (size_t c = 0; c < setting.columns(); c++) {
             if (r == 0 && c == 0) {
@@ -121,59 +133,51 @@ path crane_unloading_dyn_prog(const grid& setting) {
             } else {
                 crane_grid[r][c] = from_above > from_left ? from_above : from_left;
             }
+            if( crane_grid[r][c] > max_crane_val) {
+                max_crane_val = crane_grid[r][c];
+                max_crane_row = r;
+                max_crane_column = c;
+            }
         }
     }
 
-    // trace back from end point
-    int i = crane_grid.size() - 1;
-    int j = crane_grid[0].size() - 1;
-    int r = 0, c = 0, max = -1;
-
-    // if endpoint blocked or is building, get the block with maximum cranes
-    if (crane_grid[i][j] == -1) {
-        for (size_t k = 0; k < crane_grid.size(); k++) {
-            for (size_t l = 0; l < crane_grid[0].size(); l++) {
-                if (crane_grid[k][l] > max) {
-                    max = crane_grid[k][l];
-                    r = k;
-                    c = l;
-                }
-            }
-        }
-        i = r;
-        j = c;
+    // if the endpoint is building or blocked, start trace back from
+    // the block with maximum crane number
+    if (crane_grid[trace_back_start_row][trace_back_start_column] == -1) {
+        trace_back_start_row = max_crane_row;
+        trace_back_start_column = max_crane_column;
     }
 
     // collection of steps in tracing back process
-    std::vector<step_direction> step_trace_back;
+    std::stack<step_direction> step_trace_back;
 
     // trace back from the block, steps will be reverse order
-    while (i >= 0 && j >= 0) {
-        if (i == 0 && j == 0) {
+    while (trace_back_start_row >= 0 && trace_back_start_column >= 0) {
+        if (trace_back_start_row == 0 && trace_back_start_column == 0) {
             break;
         }
-        int left = -1;
-        int top = -1;
-        if (j > 0) {
-            left = crane_grid[i][j - 1];
+        int left_val = -1;
+        int top_val = -1;
+        if (trace_back_start_column > 0) {
+            left_val = crane_grid[trace_back_start_row][trace_back_start_column - 1];
         }
-        if (i > 0) {
-            top = crane_grid[i - 1][j];
+        if (trace_back_start_row > 0) {
+            top_val = crane_grid[trace_back_start_row - 1][trace_back_start_column];
         }
-        if (left > top) {
-            step_trace_back.push_back(STEP_DIRECTION_EAST);
-            j--;
+        if (left_val > top_val) {
+            step_trace_back.push(STEP_DIRECTION_EAST);
+            trace_back_start_column--;
         } else {
-            step_trace_back.push_back(STEP_DIRECTION_SOUTH);
-            i--;
+            step_trace_back.push(STEP_DIRECTION_SOUTH);
+            trace_back_start_row--;
         }
     }
-    std::reverse(step_trace_back.begin(), step_trace_back.end());
 
     // add the best path to return object
     path best(setting);
-    for (auto&& step : step_trace_back) {
-        best.add_step(step);
+    while (!step_trace_back.empty()) {
+        best.add_step(step_trace_back.top());
+        step_trace_back.pop();
     }
 
     return best;
