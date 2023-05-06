@@ -112,8 +112,9 @@ path crane_unloading_dyn_prog(const grid& setting) {
             if (r == 0 || setting.get(r - 1, c) == CELL_BUILDING) {
                 from_above = -1;
             } else {
+                from_above = crane_grid[r - 1][c];
                 int crane = setting.get(r, c) == CELL_CRANE ? 1 : 0;
-                from_above = crane_grid[r - 1][c] == -1 ? -1 : crane_grid[r - 1][c] + crane;
+                from_above = from_above == -1 ? -1 : from_above + crane;
             }
 
             // from_left = None if j=0 or G[i][j-1]==X; or G[i][j-1] + [→] otherwise
@@ -121,9 +122,11 @@ path crane_unloading_dyn_prog(const grid& setting) {
             if (c == 0 || setting.get(r, c - 1) == CELL_BUILDING) {
                 from_left = -1;
             } else {
+                from_left = crane_grid[r][c - 1];
                 int crane = setting.get(r, c) == CELL_CRANE ? 1 : 0;
-                from_left = crane_grid[r][c - 1] == -1 ? -1 : crane_grid[r][c - 1] + crane;
+                from_left = from_left == -1 ? -1 : from_left + crane;
             }
+
             if (from_above == -1 && from_left == -1) {
                 crane_grid[r][c] = -1;
             } else if (from_above == -1) {
