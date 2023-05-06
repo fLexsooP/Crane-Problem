@@ -78,129 +78,12 @@ path crane_unloading_exhaustive(const grid& setting) {
 // The grid must be non-empty.
 // path crane_unloading_dyn_prog(const grid& setting) {
 path crane_unloading_dyn_prog(const grid& setting) {
-<<<<<<< HEAD
-    // grid must be non-empty.
-    assert(setting.rows() > 0);
-    assert(setting.columns() > 0);
-
-    // crane_grid: the grid of max crane number for corresponding position
-    std::vector<std::vector<int>> crane_grid(setting.rows(), std::vector<int>(setting.columns(), 0));
-
-    // trace back starting point, default the most right bottom block
-    int trace_back_start_row = crane_grid.size() - 1;
-    int trace_back_start_column = crane_grid[0].size() - 1;
-
-    // records of the max crane number and it's position
-    int max_crane_row = 0, max_crane_column = 0;
-    int max_crane_val = -1;
-
-    // main loop to generate a grid with maximum crane number of it's corresponding
-    // input grid position
-    for (size_t r = 0; r < setting.rows(); r++) {
-        for (size_t c = 0; c < setting.columns(); c++) {
-            if (r == 0 && c == 0) {
-                continue;
-            }
-            // G[i][j] = None if G[i][j]==X
-            if (setting.get(r, c) == CELL_BUILDING) {
-                // std::cout << "i'm here\n";
-                crane_grid[r][c] = -1;
-                continue;
-            }
-
-            // from_above = None if i=0 or G[i-1][j]==X; or G[i-1][j] + [↓] otherwise
-            int from_above;
-            if (r == 0 || setting.get(r - 1, c) == CELL_BUILDING) {
-                from_above = -1;
-            } else {
-                int crane = setting.get(r, c) == CELL_CRANE ? 1 : 0;
-                from_above = crane_grid[r - 1][c] == -1 ? -1 : crane_grid[r - 1][c] + crane;
-            }
-
-            // from_left = None if j=0 or G[i][j-1]==X; or G[i][j-1] + [→] otherwise
-            int from_left;
-            if (c == 0 || setting.get(r, c - 1) == CELL_BUILDING) {
-                from_left = -1;
-            } else {
-                int crane = setting.get(r, c) == CELL_CRANE ? 1 : 0;
-                from_left = crane_grid[r][c - 1] == -1 ? -1 : crane_grid[r][c - 1] + crane;
-            }
-            if (from_above == -1 && from_left == -1) {
-                crane_grid[r][c] = -1;
-            } else if (from_above == -1) {
-                crane_grid[r][c] = from_left;
-            } else if (from_left == -1) {
-                crane_grid[r][c] = from_above;
-            } else {
-                crane_grid[r][c] = from_above > from_left ? from_above : from_left;
-            }
-            if( crane_grid[r][c] > max_crane_val) {
-                max_crane_val = crane_grid[r][c];
-                max_crane_row = r;
-                max_crane_column = c;
-            }
-        }
-    }
-
-    // TODO: Need to make sure which logic to follow
-    /* logic 1
-    if the endpoint is building or blocked, start trace back from
-    the block with maximum crane number
-    comment out below line if logic 1 established
-    if (crane_grid[trace_back_start_row][trace_back_start_column] == -1) {
-    */
-
-    /* logic 2
-    if the endpoint is less than maximum crane, start trace back from the block with
-    maximum crane number
-    comment out below line if logic 2 established
-    */
-    if (crane_grid[trace_back_start_row][trace_back_start_column] < max_crane_val) {
-
-        trace_back_start_row = max_crane_row;
-        trace_back_start_column = max_crane_column;
-    }
-
-    // collection of steps in tracing back process
-    std::stack<step_direction> step_trace_back;
-
-    // trace back from the block, steps will be reverse order
-    while (trace_back_start_row >= 0 && trace_back_start_column >= 0) {
-        if (trace_back_start_row == 0 && trace_back_start_column == 0) {
-            break;
-        }
-        int left_val = -1;
-        int top_val = -1;
-        if (trace_back_start_column > 0) {
-            left_val = crane_grid[trace_back_start_row][trace_back_start_column - 1];
-        }
-        if (trace_back_start_row > 0) {
-            top_val = crane_grid[trace_back_start_row - 1][trace_back_start_column];
-        }
-        if (left_val > top_val) {
-            step_trace_back.push(STEP_DIRECTION_EAST);
-            trace_back_start_column--;
-        } else {
-            step_trace_back.push(STEP_DIRECTION_SOUTH);
-            trace_back_start_row--;
-        }
-    }
-
-    // add the best path to return object
-    path best(setting);
-    while (!step_trace_back.empty()) {
-        best.add_step(step_trace_back.top());
-        step_trace_back.pop();
-    }
-
-    return best;
-=======
 
   // grid must be non-empty.
   assert(setting.rows() > 0);
   assert(setting.columns() > 0);
 
-  
+
   using cell_type = std::optional<path>;
 
   std::vector<std::vector<cell_type> > A(setting.rows(),
@@ -229,7 +112,6 @@ path crane_unloading_dyn_prog(const grid& setting) {
    return **best;
 	}
 
->>>>>>> a866938... Update cranes_algs.hpp
 }
 
 }  // namespace cranes
